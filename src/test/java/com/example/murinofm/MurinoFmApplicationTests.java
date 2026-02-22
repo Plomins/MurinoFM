@@ -8,6 +8,7 @@ class MurinoFmApplicationTests {
 
     @Test
     void contextLoads() {
+        // Метод оставлен пустым для проверки успешности загрузки контекста Spring
     }
 
 }
