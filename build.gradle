@@ -10,7 +10,7 @@ description = 'MurinoFM'
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
+        languageVersion = JavaLanguageVersion.of(25)
     }
 }
 
@@ -25,14 +25,19 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-h2console'
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'org.springframework.boot:spring-boot-starter-webmvc'
-    compileOnly 'org.projectlombok:lombok'
+    // Основные стартеры
+    implementation 'org.springframework.boot:spring-boot-starter-web'      // Для контроллеров
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa' // Для репозиториев
+
+    // База данных
     runtimeOnly 'com.h2database:h2'
+
+    // Lombok (чтобы работали аннотации @Getter, @RequiredArgsConstructor)
+    compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
-    testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
-    testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+
+    // Тесты
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
