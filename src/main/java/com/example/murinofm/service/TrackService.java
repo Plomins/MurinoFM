@@ -24,7 +24,7 @@ public class TrackService {
         return trackRepository.findByArtistContainingIgnoreCase(artist)
                 .stream()
                 .map(track -> new TrackDto(track.getId(), track.getTitle(), track.getArtist(), track.getDurationSeconds()))
-                // Если в TrackDto есть метод fromEntity, можно использовать его: .map(TrackDto::fromEntity)
-                .collect(Collectors.toList());
+
+                .toList();
     }
 }
