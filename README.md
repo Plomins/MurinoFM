@@ -15,4 +15,4 @@
 * **DTO/Entity**: Модели данных и объекты передачи.
 
 ##  Запуск
-3. API доступно по адресу: `http://localhost:8080/api/v1/tracks`
+3. API доступно по адресу: `http://localhost:8080/api/tracks`
