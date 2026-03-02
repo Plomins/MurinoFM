@@ -16,3 +16,5 @@
 
 ##  Запуск
 3. API доступно по адресу: `http://localhost:8080/api/tracks`
+## SonarCloud 
+https://sonarcloud.io/project/overview?id=Plomins_MurinoFM
