@@ -24,7 +24,7 @@ public class TrackService {
   public List<TrackDto> getAllTracks() {
     return trackRepository.findAll().stream()
         .map(TrackDto::fromEntity)
-        .collect(Collectors.toList());
+        .toList();
   }
 
   /**
@@ -36,7 +36,7 @@ public class TrackService {
   public List<TrackDto> searchByArtist(String artist) {
     return trackRepository.findByArtistContainingIgnoreCase(artist).stream()
         .map(TrackDto::fromEntity)
-        .collect(Collectors.toList());
+        .toList();
   }
 
   /**

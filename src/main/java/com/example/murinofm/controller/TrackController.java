@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
  * Предоставляет эндпоинты для получения информации о треках.
  */
 @RestController
-@RequestMapping("/api/v1/tracks")
+@RequestMapping("/api/tracks")
 @RequiredArgsConstructor
 public class TrackController {
   private final TrackService trackService;
@@ -37,8 +37,12 @@ public class TrackController {
    * @param artist имя исполнителя (параметр запроса)
    * @return список объектов TrackDto, соответствующих указанному исполнителю
    */
-  @GetMapping("/search")
-  public List<TrackDto> searchTracksByArtist(@RequestParam String artist) {
-    return trackService.searchByArtist(artist);
+  @GetMapping
+  public List<TrackDto> searchTracksByArtist(@RequestParam(required = false) String artist) {
+    if (artist != null) {
+      return trackService.searchByArtist(artist);
+    }
+    // Логика, если артист не указан (например, вернуть пустой список)
+    return List.of();
   }
 }
