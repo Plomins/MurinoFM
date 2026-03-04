@@ -37,7 +37,7 @@ public class TrackController {
    * @param artist имя исполнителя (параметр запроса)
    * @return список объектов TrackDto, соответствующих указанному исполнителю
    */
-  @GetMapping
+     @GetMapping
   public List<TrackDto> searchTracksByArtist(@RequestParam(required = false) String artist) {
     if (artist != null) {
       return trackService.searchByArtist(artist);

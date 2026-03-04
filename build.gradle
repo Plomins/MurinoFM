@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'checkstyle'
     id 'org.springframework.boot' version '4.0.3'
     id 'io.spring.dependency-management' version '1.1.7'
 }
@@ -14,6 +15,16 @@ java {
     }
 }
 
+checkstyle {
+    toolVersion = '10.21.0'
+    configFile = file("${project.rootDir}/config/checkstyle/checkstyle.xml")
+    ignoreFailures = false
+    showViolations = true
+}
+tasks.withType(Checkstyle).configureEach {
+    exclude '**/generated/**'
+}
+
 configurations {
     compileOnly {
         extendsFrom annotationProcessor
@@ -25,18 +36,11 @@ repositories {
 }
 
 dependencies {
-    // Основные стартеры
-    implementation 'org.springframework.boot:spring-boot-starter-web'      // Для контроллеров
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa' // Для репозиториев
-
-    // База данных
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     runtimeOnly 'com.h2database:h2'
-
-    // Lombok (чтобы работали аннотации @Getter, @RequiredArgsConstructor)
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
-
-    // Тесты
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
