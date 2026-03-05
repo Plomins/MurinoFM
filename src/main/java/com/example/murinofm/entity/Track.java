@@ -10,9 +10,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-/**
- * Сущность музыкального трека для хранения в базе данных.
- */
 @Entity
 @Table(name = "tracks")
 @Getter
@@ -25,5 +22,5 @@ public class Track {
   private Long id;
   private String title;
   private String artist;
-  private Integer durationSeconds; // Длительность трека
+  private Integer durationSeconds;
 }

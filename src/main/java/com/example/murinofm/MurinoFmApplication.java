@@ -8,18 +8,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
-/**
- * Главный класс приложения MurinoFm.
- * Запускает Spring Boot приложение и инициализирует базу данных тестовыми треками.
- */
 @Slf4j
 @SpringBootApplication
-public class MurinoFmApplication {
-  /**
-   * Точка входа в приложение.
-   *
-   * @param args аргументы командной строки
-   */
+ public class MurinoFmApplication {
+
   public static void main(String[] args) {
     SpringApplication.run(MurinoFmApplication.class, args);
   }
