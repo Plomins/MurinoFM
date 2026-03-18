@@ -1,12 +1,15 @@
 package com.example.murinofm.dto;
 
 import com.example.murinofm.entity.Track;
+import lombok.*;
 
-public record TrackDto(
-    Long id,
-    String title,
-    Integer durationSeconds
-) {
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class TrackDto {
+  private Long id;
+  private String title;
+  private Integer durationSeconds;
 
   public static TrackDto fromEntity(Track track) {
     return new TrackDto(

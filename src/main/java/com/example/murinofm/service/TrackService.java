@@ -1,9 +1,11 @@
 package com.example.murinofm.service;
 
 import com.example.murinofm.dto.TrackDto;
+import com.example.murinofm.entity.Track;
 import com.example.murinofm.repository.TrackRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
@@ -23,9 +25,37 @@ public class TrackService {
         .map(TrackDto::fromEntity)
         .orElseThrow(() -> new RuntimeException("Трек не найден"));
   }
+
   public List<TrackDto> searchByTitle(String title) {
     return trackRepository.findByTitleContainingIgnoreCase(title).stream()
         .map(TrackDto::fromEntity)
         .toList();
+  }
+
+  @Transactional
+  public TrackDto save(TrackDto dto) {
+    Track track = new Track();
+    track.setTitle(dto.getTitle());
+    track.setDurationSeconds(dto.getDurationSeconds());
+    Track saved = trackRepository.save(track);
+    return TrackDto.fromEntity(saved);
+  }
+  @Transactional
+  public TrackDto update(Long id, TrackDto dto) {
+    Track track = trackRepository.findById(id)
+        .orElseThrow(() -> new RuntimeException("Трек с ID " + id + " не найден"));
+
+    track.setTitle(dto.getTitle());
+    track.setDurationSeconds(dto.getDurationSeconds());
+
+    Track updated = trackRepository.save(track);
+    return TrackDto.fromEntity(updated);
+  }
+  @Transactional
+  public void delete(Long id) {
+    if (!trackRepository.existsById(id)) {
+      throw new RuntimeException("Невозможно удалить: трек с ID " + id + " не найден");
+    }
+    trackRepository.deleteById(id);
   }
 }
