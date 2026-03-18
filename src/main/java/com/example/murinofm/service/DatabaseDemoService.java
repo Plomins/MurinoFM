@@ -20,7 +20,7 @@ public class DatabaseDemoService {
     artistRepository.save(artist);
 
     if (throwError) {
-      throw new RuntimeException("Внезапная ошибка без транзакции!");
+      throw new IllegalStateException("Ошибка целостности данных при демонстрации транзакции");
     }
     Album album = new Album();
     album.setTitle("Meteora");
@@ -35,7 +35,7 @@ public class DatabaseDemoService {
     artistRepository.save(artist);
 
     if (throwError) {
-      throw new RuntimeException("Внезапная ошибка в транзакции!");
+      throw new IllegalStateException("Ошибка целостности данных при демонстрации транзакции");
     }
 
     Album album = new Album();
