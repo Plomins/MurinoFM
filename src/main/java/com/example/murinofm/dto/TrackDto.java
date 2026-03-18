@@ -19,3 +19,4 @@ public class TrackDto {
     );
   }
 }
+/*./psql -U postgres -d murinofm_db*/

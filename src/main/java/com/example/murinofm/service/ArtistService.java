@@ -50,14 +50,12 @@ public class ArtistService {
   }
   @Transactional(readOnly = true)
   public String demonstrateNPlus1() {
-    // 1. Первый запрос: Получаем всех артистов
     List<Artist> artists = artistRepository.findAll();
 
     StringBuilder report = new StringBuilder("=== Тест N+1 завершен ===\n");
 
-    // 2. N запросов: Для каждого артиста лениво подгружаем альбомы
     for (Artist artist : artists) {
-      int count = artist.getAlbums().size(); // Тут Hibernate идет в базу за альбомами конкретного артиста
+      int count = artist.getAlbums().size();
       report.append("Артист: ").append(artist.getName())
           .append(" | Альбомов в базе: ").append(count).append("\n");
     }

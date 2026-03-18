@@ -16,23 +16,42 @@ public class TrackController {
   private final TrackService trackService;
   private final ArtistService artistService;
 
+  // 1. Получение всех треков (GET /api/tracks)
+
   @GetMapping("/tracks")
   public List<TrackDto> getTracks(@RequestParam(required = false) String title) {
-    return (title != null && !title.isBlank()) ? trackService.searchByTitle(title) : trackService.getAllTracks();
+    return (title != null && !title.isBlank())
+        ? trackService.searchByTitle(title)
+        : trackService.getAllTracks();
   }
 
+  // 2. Поиск треков (специально для твоего запроса /api/tracks/search?name=Numb)
+  @GetMapping("/tracks/search")
+  public List<TrackDto> searchTracks(@RequestParam("name") String name) {
+    return trackService.searchByTitle(name);
+  }
+
+  // 3. Добавление трека (POST /api/tracks) - ИСПРАВЛЯЕТ 405 ОШИБКУ
+  @PostMapping("/tracks")
+  @ResponseStatus(HttpStatus.CREATED)
+  public TrackDto createTrack(@RequestBody TrackDto trackDto) {
+    return trackService.save(trackDto);
+  }
+
+  // 4. Удаление трека (DELETE /api/tracks/{id}) - PathVariable
   @DeleteMapping("/tracks/{id}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void delete(@PathVariable Long id) {
     trackService.delete(id);
   }
 
+  // === МЕТОДЫ ДЛЯ АРТИСТОВ И АЛЬБОМОВ ===
+
   @PostMapping("/artists")
   @ResponseStatus(HttpStatus.CREATED)
   public String createArtist(@RequestParam String name) {
     return artistService.saveArtist(name);
   }
-
 
   @PostMapping("/artists/{id}/albums")
   @ResponseStatus(HttpStatus.CREATED)
@@ -49,6 +68,7 @@ public class TrackController {
   public String deleteAlbum(@PathVariable Long id) {
     return artistService.deleteAlbum(id);
   }
+
   @GetMapping("/test/n-plus-1")
   public String getStepN1() {
     return artistService.demonstrateNPlus1();

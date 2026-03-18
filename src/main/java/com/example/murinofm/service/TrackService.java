@@ -26,7 +26,6 @@ public class TrackService {
   public TrackDto getTrackById(Long id) {
     return trackRepository.findById(id)
         .map(TrackDto::fromEntity)
-        // Sonar Fix: используем специфичное исключение
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Track not found"));
   }
 
@@ -41,16 +40,9 @@ public class TrackService {
     Track track = new Track();
     track.setTitle(dto.getTitle());
     track.setDurationSeconds(dto.getDurationSeconds());
-    return TrackDto.fromEntity(trackRepository.save(track));
-  }
-
-  @Transactional
-  public TrackDto update(Long id, TrackDto dto) {
-    Track track = trackRepository.findById(id)
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Track not found"));
-    track.setTitle(dto.getTitle());
-    track.setDurationSeconds(dto.getDurationSeconds());
-    return TrackDto.fromEntity(trackRepository.save(track));
+    // Сохраняем в БД
+    Track savedTrack = trackRepository.save(track);
+    return TrackDto.fromEntity(savedTrack);
   }
 
   @Transactional
