@@ -5,12 +5,15 @@ import com.example.murinofm.entity.Artist;
 import com.example.murinofm.repository.AlbumRepository;
 import com.example.murinofm.repository.ArtistRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
 public class DatabaseDemoService {
+
   private final ArtistRepository artistRepository;
   private final AlbumRepository albumRepository;
 
@@ -20,14 +23,16 @@ public class DatabaseDemoService {
     artistRepository.save(artist);
 
     if (throwError) {
-      throw new RuntimeException("Внезапная ошибка без транзакции!");
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Внезапная ошибка без транзакции!");
     }
+
     Album album = new Album();
     album.setTitle("Meteora");
     album.setArtist(artist);
     albumRepository.save(album);
   }
 
+  // ДЕМО 2: С транзакцией (Полный откат при ошибке)
   @Transactional
   public void saveDataWithTransaction(boolean throwError) {
     Artist artist = new Artist();
@@ -35,7 +40,7 @@ public class DatabaseDemoService {
     artistRepository.save(artist);
 
     if (throwError) {
-      throw new RuntimeException("Внезапная ошибка в транзакции!");
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Внезапная ошибка в транзакции!");
     }
 
     Album album = new Album();

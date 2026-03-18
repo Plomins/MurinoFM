@@ -4,8 +4,11 @@ import com.example.murinofm.dto.TrackDto;
 import com.example.murinofm.entity.Track;
 import com.example.murinofm.repository.TrackRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+
 import java.util.List;
 
 @Service
@@ -23,7 +26,8 @@ public class TrackService {
   public TrackDto getTrackById(Long id) {
     return trackRepository.findById(id)
         .map(TrackDto::fromEntity)
-        .orElseThrow(() -> new RuntimeException("Трек не найден"));
+        // Sonar Fix: используем специфичное исключение
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Track not found"));
   }
 
   public List<TrackDto> searchByTitle(String title) {
@@ -37,24 +41,22 @@ public class TrackService {
     Track track = new Track();
     track.setTitle(dto.getTitle());
     track.setDurationSeconds(dto.getDurationSeconds());
-    Track saved = trackRepository.save(track);
-    return TrackDto.fromEntity(saved);
+    return TrackDto.fromEntity(trackRepository.save(track));
   }
+
   @Transactional
   public TrackDto update(Long id, TrackDto dto) {
     Track track = trackRepository.findById(id)
-        .orElseThrow(() -> new RuntimeException("Трек с ID " + id + " не найден"));
-
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Track not found"));
     track.setTitle(dto.getTitle());
     track.setDurationSeconds(dto.getDurationSeconds());
-
-    Track updated = trackRepository.save(track);
-    return TrackDto.fromEntity(updated);
+    return TrackDto.fromEntity(trackRepository.save(track));
   }
+
   @Transactional
   public void delete(Long id) {
     if (!trackRepository.existsById(id)) {
-      throw new RuntimeException("Невозможно удалить: трек с ID " + id + " не найден");
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Track not found");
     }
     trackRepository.deleteById(id);
   }
