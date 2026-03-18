@@ -6,18 +6,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "tracks")
+@Table(name = "albums")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
-public class Track {
+public class Album {
   @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
   private String title;
-  private Integer durationSeconds;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "album_id")
-  private Album album;
+  @JoinColumn(name = "artist_id")
+  private Artist artist;
 
-  @ManyToMany(mappedBy = "tracks", fetch = FetchType.LAZY)
-  private List<Playlist> playlists = new ArrayList<>();
+  @OneToMany(mappedBy = "album", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<Track> tracks = new ArrayList<>();
 }

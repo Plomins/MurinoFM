@@ -5,7 +5,6 @@ import com.example.murinofm.entity.Track;
 public record TrackDto(
     Long id,
     String title,
-    String artist,
     Integer durationSeconds
 ) {
 
@@ -13,7 +12,6 @@ public record TrackDto(
     return new TrackDto(
         track.getId(),
         track.getTitle(),
-        track.getArtist(),
         track.getDurationSeconds()
     );
   }
