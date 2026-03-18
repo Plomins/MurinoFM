@@ -11,10 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class DatabaseDemoService {
-
   private final ArtistRepository artistRepository;
   private final AlbumRepository albumRepository;
-
 
   public void saveDataWithoutTransaction(boolean throwError) {
     Artist artist = new Artist();
@@ -22,9 +20,8 @@ public class DatabaseDemoService {
     artistRepository.save(artist);
 
     if (throwError) {
-      throw new RuntimeException("Упс! Ошибка после сохранения артиста, но до альбома.");
+      throw new RuntimeException("Внезапная ошибка без транзакции!");
     }
-
     Album album = new Album();
     album.setTitle("Meteora");
     album.setArtist(artist);
@@ -38,7 +35,7 @@ public class DatabaseDemoService {
     artistRepository.save(artist);
 
     if (throwError) {
-      throw new RuntimeException("Ошибка! Благодаря @Transactional артист НЕ сохранится.");
+      throw new RuntimeException("Внезапная ошибка в транзакции!");
     }
 
     Album album = new Album();
