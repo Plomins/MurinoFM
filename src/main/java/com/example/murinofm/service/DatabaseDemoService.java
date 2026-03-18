@@ -32,7 +32,6 @@ public class DatabaseDemoService {
     albumRepository.save(album);
   }
 
-  // ДЕМО 2: С транзакцией (Полный откат при ошибке)
   @Transactional
   public void saveDataWithTransaction(boolean throwError) {
     Artist artist = new Artist();

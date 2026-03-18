@@ -14,7 +14,7 @@ public class Album {
   private String title;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "artist_id")
+  @JoinColumn(name = "artist_id", nullable = false)
   private Artist artist;
 
   @OneToMany(mappedBy = "album", cascade = CascadeType.ALL, orphanRemoval = true)
