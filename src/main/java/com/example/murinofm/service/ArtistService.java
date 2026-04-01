@@ -21,6 +21,14 @@ public class ArtistService {
   private final ArtistRepository artistRepository;
   private final AlbumRepository albumRepository;
 
+  // Метод для получения всех альбомов (для Postman)
+  @Transactional(readOnly = true)
+  public List<String> getAllAlbumsList() {
+    return albumRepository.findAll().stream()
+        .map(album -> "Альбом: " + album.getTitle() + " [ID: " + album.getId() + "]")
+        .toList();
+  }
+
   @Transactional
   public String saveArtist(String name) {
     Artist artist = new Artist();
@@ -40,6 +48,7 @@ public class ArtistService {
     log.info(message);
     return message;
   }
+
   @Transactional
   public String deleteAlbum(Long id) {
     if (!albumRepository.existsById(id)) {
@@ -48,10 +57,10 @@ public class ArtistService {
     albumRepository.deleteById(id);
     return "Альбом успешно удален";
   }
+
   @Transactional(readOnly = true)
   public String demonstrateNPlus1() {
     List<Artist> artists = artistRepository.findAll();
-
     StringBuilder report = new StringBuilder("=== Тест N+1 завершен ===\n");
 
     for (Artist artist : artists) {
@@ -62,6 +71,7 @@ public class ArtistService {
 
     return report.toString() + "Смотри SQL-логи в консоли IntelliJ IDEA!";
   }
+
   @Transactional
   public String addAlbumToArtist(Long artistId, String albumTitle) {
     Artist artist = artistRepository.findById(artistId)
@@ -74,5 +84,11 @@ public class ArtistService {
     albumRepository.save(album);
     log.info("Добавлен альбом '{}' артисту {}", albumTitle, artist.getName());
     return "Альбом '" + albumTitle + "' успешно добавлен артисту " + artist.getName();
+  }
+  @Transactional(readOnly = true)
+  public List<String> getAllArtistsList() {
+    return artistRepository.findAll().stream()
+        .map(artist -> "Артист: " + artist.getName() + " [ID: " + artist.getId() + "]")
+        .toList();
   }
 }

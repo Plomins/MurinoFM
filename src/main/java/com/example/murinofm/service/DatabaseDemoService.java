@@ -19,7 +19,7 @@ public class DatabaseDemoService {
 
   public void saveDataWithoutTransaction(boolean throwError) {
     Artist artist = new Artist();
-    artist.setName("Linkin Park");
+    artist.setName("test транзакции");
     artistRepository.save(artist);
 
     if (throwError) {
@@ -27,7 +27,7 @@ public class DatabaseDemoService {
     }
 
     Album album = new Album();
-    album.setTitle("Meteora");
+    album.setTitle("новый альбом");
     album.setArtist(artist);
     albumRepository.save(album);
   }
@@ -35,7 +35,7 @@ public class DatabaseDemoService {
   @Transactional
   public void saveDataWithTransaction(boolean throwError) {
     Artist artist = new Artist();
-    artist.setName("Daft Punk");
+    artist.setName("Тест транзкции 2");
     artistRepository.save(artist);
 
     if (throwError) {
@@ -43,7 +43,7 @@ public class DatabaseDemoService {
     }
 
     Album album = new Album();
-    album.setTitle("Discovery");
+    album.setTitle("че та там");
     album.setArtist(artist);
     albumRepository.save(album);
   }
