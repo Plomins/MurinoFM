@@ -1,7 +1,7 @@
 package com.example.murinofm.controller;
 
 import com.example.murinofm.dto.TrackDto;
-import com.example.murinofm.service.DatabaseDemoService;
+import com.example.murinofm.service.AlbumService;
 import com.example.murinofm.service.TrackService;
 import com.example.murinofm.service.ArtistService;
 import lombok.RequiredArgsConstructor;
@@ -63,18 +63,18 @@ public class TrackController {
     return artistService.addAlbumToArtist(id, title);
   }
   @Autowired
-  private DatabaseDemoService databaseDemoService;
+  private AlbumService albumService;
   @GetMapping("/demo/no-transaction")
   public String demoNoTransaction(
       @RequestParam(defaultValue = "false") boolean error) {
-    databaseDemoService.saveDataWithoutTransaction(error);
+    albumService.saveDataWithoutTransaction(error);
     return "Сохранено без транзакции";
   }
 
   @GetMapping("/demo/with-transaction")
   public String demoWithTransaction(
       @RequestParam(defaultValue = "false") boolean error) {
-    databaseDemoService.saveDataWithTransaction(error);
+    albumService.saveDataWithTransaction(error);
     return "Сохранено с транзакцией";
   }
 

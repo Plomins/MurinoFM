@@ -12,7 +12,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
-public class DatabaseDemoService {
+public class AlbumService {
 
   private final ArtistRepository artistRepository;
   private final AlbumRepository albumRepository;
