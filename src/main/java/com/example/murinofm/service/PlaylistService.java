@@ -23,18 +23,13 @@ public class PlaylistService {
   public void createPlaylistWithTracks(String name, List<Long> trackIds) {
     Playlist playlist = new Playlist();
     playlist.setName(name);
-
-    // Та самая проверка "от препода"
     if (trackIds == null || trackIds.isEmpty()) {
       throw new RuntimeException("Невалидные данные: плейлист не может быть пустым!");
     }
-
     List<Track> tracks = trackRepository.findAllById(trackIds);
-
     if (tracks.size() != trackIds.size()) {
       throw new RuntimeException("Ошибка: часть треков не найдена. Откат транзакции!");
     }
-
     playlist.setTracks(tracks);
     playlistRepository.save(playlist);
   }

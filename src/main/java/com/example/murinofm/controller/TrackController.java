@@ -71,13 +71,6 @@ public class TrackController {
     return "Сохранено без транзакции";
   }
 
-  @GetMapping("/demo/with-transaction")
-  public String demoWithTransaction(
-      @RequestParam(defaultValue = "false") boolean error) {
-    albumService.saveDataWithTransaction(error);
-    return "Сохранено с транзакцией";
-  }
-
   @DeleteMapping("/artists/{id}")
   public String deleteArtist(@PathVariable Long id) {
     return artistService.deleteArtist(id);

@@ -1,6 +1,7 @@
 package com.example.murinofm.service;
 
 import com.example.murinofm.dto.TrackDto;
+import com.example.murinofm.entity.Playlist;
 import com.example.murinofm.entity.Track;
 import com.example.murinofm.repository.TrackRepository;
 import lombok.RequiredArgsConstructor;
@@ -40,16 +41,18 @@ public class TrackService {
     Track track = new Track();
     track.setTitle(dto.getTitle());
     track.setDurationSeconds(dto.getDurationSeconds());
-    // Сохраняем в БД
     Track savedTrack = trackRepository.save(track);
     return TrackDto.fromEntity(savedTrack);
   }
 
   @Transactional
   public void delete(Long id) {
-    if (!trackRepository.existsById(id)) {
-      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Track not found");
+    Track track = trackRepository.findById(id)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Трек не найден"));
+    for (Playlist playlist : track.getPlaylists()) {
+      playlist.getTracks().remove(track);
     }
-    trackRepository.deleteById(id);
+    trackRepository.delete(track);
   }
+
 }
