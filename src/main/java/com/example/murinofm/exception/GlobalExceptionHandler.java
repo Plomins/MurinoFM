@@ -10,6 +10,18 @@ import java.util.Map;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
+  @ExceptionHandler(AppException.class)
+  public ResponseEntity<Object> handleAppException(AppException ex) {
+    return new ResponseEntity<>(
+        Map.of(
+            "timestamp", LocalDateTime.now(),
+            "message", ex.getMessage(),
+            "status", HttpStatus.NOT_FOUND.value()
+        ),
+        HttpStatus.NOT_FOUND
+    );
+  }
+
   @ExceptionHandler(RuntimeException.class)
   public ResponseEntity<Object> handleRuntime(RuntimeException ex) {
     return new ResponseEntity<>(

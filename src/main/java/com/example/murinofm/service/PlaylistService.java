@@ -1,10 +1,10 @@
-
 package com.example.murinofm.service;
 
 import com.example.murinofm.dto.PlaylistDto;
 import com.example.murinofm.dto.TrackDto;
 import com.example.murinofm.entity.Playlist;
 import com.example.murinofm.entity.Track;
+import com.example.murinofm.exception.AppException;
 import com.example.murinofm.repository.PlaylistRepository;
 import com.example.murinofm.repository.TrackRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,19 +24,20 @@ public class PlaylistService {
     Playlist playlist = new Playlist();
     playlist.setName(name);
     if (trackIds == null || trackIds.isEmpty()) {
-      throw new RuntimeException("Невалидные данные: плейлист не может быть пустым!");
+      throw new AppException("Невалидные данные: плейлист не может быть пустым!");
     }
     List<Track> tracks = trackRepository.findAllById(trackIds);
     if (tracks.size() != trackIds.size()) {
-      throw new RuntimeException("Ошибка: часть треков не найдена. Откат транзакции!");
+      throw new AppException("Ошибка: часть треков не найдена. Откат транзакции!");
     }
     playlist.setTracks(tracks);
     playlistRepository.save(playlist);
   }
+
   @Transactional(readOnly = true)
   public PlaylistDto getPlaylistById(Long id) {
     Playlist playlist = playlistRepository.findById(id)
-        .orElseThrow(() -> new RuntimeException("Плейлист с ID " + id + " не найден"));
+        .orElseThrow(() -> new AppException("Плейлист с ID " + id + " не найден"));
 
     List<TrackDto> trackDtos = playlist.getTracks().stream()
         .map(TrackDto::fromEntity)
