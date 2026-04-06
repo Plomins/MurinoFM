@@ -19,7 +19,7 @@ public class AlbumService {
 
   public void saveDataWithoutTransaction(boolean throwError) {
     Artist artist = new Artist();
-    artist.setName("test транзакции");
+    artist.setName("Сохранение БЕЗ транзакции");
     artistRepository.save(artist);
 
     if (throwError) {
@@ -27,24 +27,9 @@ public class AlbumService {
     }
 
     Album album = new Album();
-    album.setTitle("новый альбом");
+    album.setTitle("новый альбом созданный БЕЗ транзакции");
     album.setArtist(artist);
     albumRepository.save(album);
   }
 
-  @Transactional
-  public void saveDataWithTransaction(boolean throwError) {
-    Artist artist = new Artist();
-    artist.setName("Тест транзкции 2");
-    artistRepository.save(artist);
-
-    if (throwError) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Внезапная ошибка в транзакции!");
-    }
-
-    Album album = new Album();
-    album.setTitle("че та там");
-    album.setArtist(artist);
-    albumRepository.save(album);
-  }
 }
