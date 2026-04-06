@@ -18,7 +18,6 @@ public class PlaylistService {
 
   private final PlaylistRepository playlistRepository;
   private final TrackRepository trackRepository;
-
   @Transactional
   public void createPlaylistWithTracks(String name, List<Long> trackIds) {
     Playlist playlist = new Playlist();
