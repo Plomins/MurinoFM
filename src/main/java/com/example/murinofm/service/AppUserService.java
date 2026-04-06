@@ -2,7 +2,10 @@ package com.example.murinofm.service;
 
 import com.example.murinofm.dto.AppUserDto;
 import com.example.murinofm.entity.AppUser;
+import com.example.murinofm.entity.Playlist;
+import com.example.murinofm.exception.AppException;
 import com.example.murinofm.repository.AppUserRepository;
+import com.example.murinofm.repository.PlaylistRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -15,7 +18,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class AppUserService {
-
+  private final PlaylistRepository playlistRepository;
   private final AppUserRepository appUserRepository;
 
   @Transactional(readOnly = true)
@@ -63,5 +66,18 @@ public class AppUserService {
     }
     appUserRepository.deleteById(id);
     log.info("Удалён пользователь с ID: {}", id);
+  }
+  @Transactional
+  public AppUserDto addPlaylistToUser(Long userId, Long playlistId) {
+    AppUser user = appUserRepository.findById(userId)
+        .orElseThrow(() -> new AppException("Пользователь с ID " + userId + " не найден"));
+
+    Playlist playlist = playlistRepository.findById(playlistId)
+        .orElseThrow(() -> new AppException("Плейлист с ID " + playlistId + " не найден"));
+
+    playlist.setOwner(user);
+    user.getPlaylists().add(playlist);
+
+    return AppUserDto.fromEntity(appUserRepository.save(user));
   }
 }
