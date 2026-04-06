@@ -26,8 +26,6 @@ public class EntityViewController {
   private final PlaylistService playlistService;
   private final AppUserService appUserService;
 
-  // ───── ARTISTS ─────
-
   // GET /api/view/artists
   @GetMapping("/artists")
   public List<Artist> getAllArtists() {
@@ -41,8 +39,6 @@ public class EntityViewController {
         .orElseThrow(() -> new RuntimeException("Артист с ID " + id + " не найден"));
   }
 
-  // ───── ALBUMS ─────
-
   // GET /api/view/albums
   @GetMapping("/albums")
   public List<Album> getAllAlbums() {
@@ -55,9 +51,6 @@ public class EntityViewController {
     return albumRepository.findById(id)
         .orElseThrow(() -> new RuntimeException("Альбом с ID " + id + " не найден"));
   }
-
-  // ───── TRACKS ─────
-
   // GET /api/view/tracks
   @GetMapping("/tracks")
   public List<TrackDto> getAllTracks() {
@@ -70,7 +63,6 @@ public class EntityViewController {
     return trackService.getTrackById(id);
   }
 
-  // ───── PLAYLISTS ─────
 
   // GET /api/view/playlists/{id}
   @GetMapping("/playlists/{id}")
