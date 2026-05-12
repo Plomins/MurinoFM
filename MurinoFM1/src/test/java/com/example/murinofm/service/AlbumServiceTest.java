@@ -1,7 +1,5 @@
 package com.example.murinofm.service;
 
-import com.example.murinofm.entity.Album;
-import com.example.murinofm.entity.Artist;
 import com.example.murinofm.repository.AlbumRepository;
 import com.example.murinofm.repository.ArtistRepository;
 import org.junit.jupiter.api.Test;
@@ -18,27 +16,25 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class AlbumServiceTest {
 
-  @Mock
-  private ArtistRepository artistRepository;
+  @Mock private ArtistRepository artistRepository;
+  @Mock private AlbumRepository albumRepository;
 
-  @Mock
-  private AlbumRepository albumRepository;
-
-  @InjectMocks
-  private AlbumService albumService;
+  @InjectMocks private AlbumService albumService;
 
   @Test
-  void saveDataWithoutTransaction_Success() {
+  void saveDataWithoutTransaction_NoError_Success() {
     albumService.saveDataWithoutTransaction(false);
-    verify(artistRepository, times(1)).save(any(Artist.class));
-    verify(albumRepository, times(1)).save(any(Album.class));
+
+    verify(artistRepository, times(1)).save(any());
+    verify(albumRepository, times(1)).save(any());
   }
 
   @Test
-  void saveDataWithoutTransaction_ThrowsException() {
+  void saveDataWithoutTransaction_WithError_ThrowsException() {
     assertThrows(ResponseStatusException.class,
         () -> albumService.saveDataWithoutTransaction(true));
-    verify(artistRepository, times(1)).save(any(Artist.class));
-    verify(albumRepository, never()).save(any(Album.class));
+
+    verify(artistRepository, times(1)).save(any());
+    verify(albumRepository, never()).save(any());
   }
 }
