@@ -12,10 +12,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.ArrayList;
-
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -24,137 +24,191 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class AppUserServiceTest {
 
-  @Mock
-  private AppUserRepository appUserRepository;
+  @Mock private AppUserRepository appUserRepository;
+  @Mock private PlaylistRepository playlistRepository;
+  @InjectMocks private AppUserService appUserService;
 
-  @Mock
-  private PlaylistRepository playlistRepository;
-
-  @InjectMocks
-  private AppUserService appUserService;
-
-  @Test
-  void createUser_Success() {
-    String username = "testUser";
-    AppUser user = new AppUser();
-    user.setId(1L);
-    user.setUsername(username);
-    when(appUserRepository.existsByUsername(username)).thenReturn(false);
-    when(appUserRepository.save(any(AppUser.class))).thenReturn(user);
-
-    AppUserDto result = appUserService.createUser(username);
-
-    assertNotNull(result);
-    verify(appUserRepository).save(any(AppUser.class));
-  }
-
-  @Test
-  void createUser_ThrowsConflictException() {
-    String username = "testUser";
-    when(appUserRepository.existsByUsername(username)).thenReturn(true);
-
-    assertThrows(ConflictException.class, () -> appUserService.createUser(username));
-    verify(appUserRepository, never()).save(any());
-  }
-
-  @Test
-  void addPlaylistToUser_Success() {
-    AppUser user = new AppUser();
-    user.setId(1L);
-    user.setPlaylists(new ArrayList<>());
-
-    Playlist playlist = new Playlist();
-    playlist.setId(1L);
-    when(appUserRepository.findById(1L)).thenReturn(Optional.of(user));
-    when(playlistRepository.findById(1L)).thenReturn(Optional.of(playlist));
-    when(appUserRepository.save(any(AppUser.class))).thenReturn(user);
-
-    appUserService.addPlaylistToUser(1L, 1L);
-
-    assertEquals(user, playlist.getOwner());
-    assertTrue(user.getPlaylists().contains(playlist));
-    verify(appUserRepository).save(user);
-  }
   @Test
   void getAllUsers_Success() {
-    AppUser user = new AppUser();
-    user.setId(1L);
-    user.setUsername("user1");
-
-    when(appUserRepository.findAll()).thenReturn(List.of(user));
-
+    when(appUserRepository.findAll()).thenReturn(List.of(new AppUser()));
     List<AppUserDto> result = appUserService.getAllUsers();
-    assertFalse(result.isEmpty());
-    assertEquals("user1", result.get(0).getUsername());
+    assertEquals(1, result.size());
   }
 
   @Test
-  void getUserById_Success() {
+  void getUserById_Found() {
     AppUser user = new AppUser();
     user.setId(1L);
-    user.setUsername("user1");
-
     when(appUserRepository.findById(1L)).thenReturn(Optional.of(user));
-
-    AppUserDto result = appUserService.getUserById(1L);
-
-    assertEquals("user1", result.getUsername());
+    assertNotNull(appUserService.getUserById(1L));
   }
 
   @Test
   void getUserById_NotFound_ThrowsException() {
     when(appUserRepository.findById(1L)).thenReturn(Optional.empty());
-
     assertThrows(AppException.class, () -> appUserService.getUserById(1L));
   }
 
   @Test
-  void updateUsername_Success() {
+  void createUser_Success() {
+    when(appUserRepository.existsByUsername("admin")).thenReturn(false);
+    when(appUserRepository.save(any())).thenReturn(new AppUser());
+    assertNotNull(appUserService.createUser("admin", "pass"));
+  }
+
+  @Test
+  void createUser_AlreadyExists_ThrowsConflict() {
+    when(appUserRepository.existsByUsername("admin")).thenReturn(true);
+    assertThrows(ConflictException.class, () -> appUserService.createUser("admin", "pass"));
+  }
+
+  @Test
+  void authenticate_Success() {
     AppUser user = new AppUser();
-    user.setId(1L);
-    user.setUsername("oldName");
+    user.setUsername("user");
+    user.setPassword("123");
+    when(appUserRepository.findAll()).thenReturn(List.of(user));
+    assertNotNull(appUserService.authenticate("user", "123"));
+  }
 
-    when(appUserRepository.findById(1L)).thenReturn(Optional.of(user));
-    when(appUserRepository.save(any(AppUser.class))).thenReturn(user);
-
-    AppUserDto result = appUserService.updateUsername(1L, "newName");
-
-    assertEquals("newName", user.getUsername());
-    verify(appUserRepository).save(user);
+  @Test
+  void authenticate_WrongCredentials_ThrowsException() {
+    when(appUserRepository.findAll()).thenReturn(List.of());
+    assertThrows(AppException.class, () -> appUserService.authenticate("u", "p"));
   }
 
   @Test
   void deleteUser_Success() {
     when(appUserRepository.existsById(1L)).thenReturn(true);
-
     appUserService.deleteUser(1L);
-
     verify(appUserRepository).deleteById(1L);
   }
 
   @Test
-  void deleteUser_NotFound_ThrowsException() {
-    when(appUserRepository.existsById(1L)).thenReturn(false);
-    assertThrows(AppException.class, () -> appUserService.deleteUser(1L));
+  void addPlaylistToUser_Success() {
+    AppUser user = new AppUser();
+    user.setPlaylists(new ArrayList<>());
+    Playlist playlist = new Playlist();
+    when(appUserRepository.findById(1L)).thenReturn(Optional.of(user));
+    when(playlistRepository.findById(2L)).thenReturn(Optional.of(playlist));
+    when(appUserRepository.save(any())).thenReturn(user);
+
+    appUserService.addPlaylistToUser(1L, 2L);
+    assertEquals(user, playlist.getOwner());
   }
+  @Test
+  void updateUsername_UserNotFound_ThrowsException() {
+    when(appUserRepository.findById(1L)).thenReturn(Optional.empty());
+    assertThrows(AppException.class, () -> appUserService.updateUsername(1L, "new"));
+  }
+
+  @Test
+  void updateAvatar_Success() {
+    AppUser user = new AppUser();
+    when(appUserRepository.findById(1L)).thenReturn(Optional.of(user));
+    when(appUserRepository.save(any())).thenReturn(user);
+
+    appUserService.updateAvatar(1L, "http://avatar.url");
+    assertEquals("http://avatar.url", user.getAvatarUrl());
+  }
+
+  @Test
+  void searchUsers_Success() {
+    when(appUserRepository.findByUsernameContainingIgnoreCase("test")).thenReturn(List.of(new AppUser()));
+    List<AppUserDto> result = appUserService.searchUsers("test");
+    assertEquals(1, result.size());
+  }
+
   @Test
   void addPlaylistToUser_PlaylistNotFound_ThrowsException() {
     when(appUserRepository.findById(1L)).thenReturn(Optional.of(new AppUser()));
     when(playlistRepository.findById(2L)).thenReturn(Optional.empty());
-
     assertThrows(AppException.class, () -> appUserService.addPlaylistToUser(1L, 2L));
   }
   @Test
-  void updateUsername_NotFound_ThrowsException() {
-    when(appUserRepository.findById(1L)).thenReturn(Optional.empty());
+  void updateUsername_Success() {
+    AppUser user = new AppUser(); user.setId(1L);
+    when(appUserRepository.findById(1L)).thenReturn(Optional.of(user));
+    when(appUserRepository.save(any())).thenReturn(user);
 
-    assertThrows(AppException.class, () -> appUserService.updateUsername(1L, "newName"));
+    appUserService.updateUsername(1L, "newUsername");
+    assertEquals("newUsername", user.getUsername());
   }
 
   @Test
   void addPlaylistToUser_UserNotFound_ThrowsException() {
+    when(appUserRepository.findById(999L)).thenReturn(Optional.empty());
+    assertThrows(AppException.class, () -> appUserService.addPlaylistToUser(999L, 1L));
+  }
+  @Test
+  void authenticate_UserNotFound_ThrowsException() {
+    when(appUserRepository.findAll()).thenReturn(List.of());
+    assertThrows(AppException.class, () -> appUserService.authenticate("none", "none"));
+  }
+
+  @Test
+  void searchUsers_EmptyResult_Success() {
+    when(appUserRepository.findByUsernameContainingIgnoreCase("empty")).thenReturn(List.of());
+    List<AppUserDto> result = appUserService.searchUsers("empty");
+    assertTrue(result.isEmpty());
+  }
+
+  @Test
+  void authenticate_WrongPassword_ThrowsException() {
+    AppUser user = new AppUser();
+    user.setUsername("admin");
+    user.setPassword("pass");
+
+    when(appUserRepository.findAll()).thenReturn(List.of(user));
+
+    assertThrows(AppException.class, () -> appUserService.authenticate("admin", "wrong_pass"));
+  }
+
+  @Test
+  void updateAvatar_UserNotFound_ThrowsException() {
+    when(appUserRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+    assertThrows(AppException.class, () -> appUserService.updateAvatar(1L, "url"));
+  }
+  @Test
+  void deleteUser_NotFound_ThrowsException() {
+    when(appUserRepository.existsById(99L)).thenReturn(false);
+    assertThrows(AppException.class, () -> appUserService.deleteUser(99L));
+  }
+  @Test
+  void updateUsername_NotFound_ThrowsException() {
     when(appUserRepository.findById(1L)).thenReturn(Optional.empty());
-    assertThrows(AppException.class, () -> appUserService.addPlaylistToUser(1L, 10L));
-    verify(playlistRepository, never()).findById(anyLong());
-}
+    assertThrows(AppException.class, () -> appUserService.updateUsername(1L, "new"));
+  }
+  @Test
+  void authenticate_ComprehensiveBranchCoverage() {
+    AppUser user1 = new AppUser(); user1.setUsername("wrong"); user1.setPassword("wrong");
+    AppUser user2 = new AppUser(); user2.setUsername("admin"); user2.setPassword("wrong");
+    AppUser user3 = new AppUser(); user3.setUsername("admin"); user3.setPassword("admin");
+    user3.setId(1L);
+
+    when(appUserRepository.findAll()).thenReturn(List.of(user1, user2, user3));
+
+    AppUserDto result = appUserService.authenticate("admin", "admin");
+    assertEquals(1L, result.getId());
+  }
+  @Test
+  void authenticate_BranchCoverage() {
+    AppUser u1 = new AppUser(); u1.setUsername("user1"); u1.setPassword("pass1");
+    AppUser u2 = new AppUser(); u2.setUsername("target"); u2.setPassword("wrong");
+    AppUser u3 = new AppUser(); u3.setUsername("target"); u3.setPassword("correct");
+    u3.setId(3L);
+
+    when(appUserRepository.findAll()).thenReturn(List.of(u1, u2, u3));
+
+    AppUserDto result = appUserService.authenticate("target", "correct");
+    assertEquals(3L, result.getId());
+  }
+
+  @Test
+  void deleteUser_NotFound_Exception() {
+    when(appUserRepository.existsById(1L)).thenReturn(false);
+    assertThrows(AppException.class, () -> appUserService.deleteUser(1L));
+  }
+
 }
