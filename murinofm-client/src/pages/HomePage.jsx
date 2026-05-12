@@ -328,7 +328,7 @@ export default function HomePage() {
   // ======= РЕНДЕР =======
   return (
     <div className="relative">
-      <h1 className="text-4xl font-bold mb-8 text-center">🎵 Добро пожаловать в MurinoFM!</h1>
+      <h1 className="text-4xl font-bold mb-8 text-center">Добро пожаловать в MurinoFM!</h1>
 
       {/* Модальное окно авторизации */}
       {!activeUser && (
@@ -445,7 +445,7 @@ export default function HomePage() {
 
           {/* Блок "Ваши друзья" */}
           <div className="mt-12 max-w-4xl mx-auto">
-            <h2 className="text-2xl font-semibold mb-4">👥 Ваши друзья</h2>
+            <h2 className="text-2xl font-semibold mb-4">Ваши друзья</h2>
             <div className="mb-4">
               <input className="w-full bg-dark-700 p-3 rounded text-white" placeholder="Поиск по нику..." value={searchQuery} onChange={e => handleSearchInput(e.target.value)} />
             </div>
