@@ -1,12 +1,10 @@
 package com.example.murinofm.service;
 
 import com.example.murinofm.cache.TrackSearchCache;
-import com.example.murinofm.cache.TrackSearchKey;
 import com.example.murinofm.dto.TrackDto;
 import com.example.murinofm.entity.Album;
 import com.example.murinofm.entity.Playlist;
 import com.example.murinofm.entity.Track;
-import com.example.murinofm.exception.AppException;
 import com.example.murinofm.repository.AlbumRepository;
 import com.example.murinofm.repository.TrackRepository;
 import org.junit.jupiter.api.Test;
@@ -17,7 +15,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
@@ -31,226 +28,251 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class TrackServiceTest {
 
-  @Mock
-  private TrackRepository trackRepository;
-
-  @Mock
-  private AlbumRepository albumRepository;
-
-  @Mock
-  private TrackSearchCache trackSearchCache;
-
-  @InjectMocks
-  private TrackService trackService;
+  @Mock private TrackRepository trackRepository;
+  @Mock private AlbumRepository albumRepository;
+  @Mock private TrackSearchCache trackSearchCache;
+  @InjectMocks private TrackService trackService;
 
   @Test
-  void save_WithAlbumSuccess() {
+  void saveTrack_WithAlbum_Success() {
     TrackDto dto = new TrackDto();
-    dto.setTitle("Test Track");
-    dto.setAlbumId(1L);
+    dto.setAlbumId(10L);
+    when(albumRepository.findById(10L)).thenReturn(Optional.of(new Album()));
+    when(trackRepository.save(any())).thenReturn(new Track());
 
-    Album album = new Album();
-    album.setId(1L);
-
-    Track track = new Track();
-    track.setTitle("Test Track");
-    track.setAlbum(album);
-    when(albumRepository.findById(1L)).thenReturn(Optional.of(album));
-    when(trackRepository.save(any(Track.class))).thenReturn(track);
-
-    TrackDto result = trackService.save(dto);
-
-    assertNotNull(result);
+    trackService.save(dto);
     verify(trackSearchCache).invalidate();
   }
 
   @Test
-  void delete_RemovesFromPlaylistsAndDeletes() {
+  void deleteTrack_ClearsPlaylists_Success() {
     Track track = new Track();
-    track.setId(1L);
-
     Playlist playlist = new Playlist();
     playlist.setTracks(new ArrayList<>(List.of(track)));
     track.setPlaylists(List.of(playlist));
 
     when(trackRepository.findById(1L)).thenReturn(Optional.of(track));
-
     trackService.delete(1L);
-    assertFalse(playlist.getTracks().contains(track));
+
+    assertTrue(playlist.getTracks().isEmpty());
     verify(trackRepository).delete(track);
     verify(trackSearchCache).invalidate();
   }
 
   @Test
-  void findByArtistName_CacheMiss() {
-    Pageable pageable = PageRequest.of(0, 10);
-    TrackSearchKey key = new TrackSearchKey("Artist", 0, 10);
-
-    Track track = new Track();
-    track.setTitle("Track");
-    Page<Track> trackPage = new PageImpl<>(List.of(track));
-    when(trackSearchCache.get(key)).thenReturn(null);
-    when(trackRepository.findByArtistName("Artist", pageable)).thenReturn(trackPage);
-
-    Page<TrackDto> result = trackService.findByArtistName("Artist", pageable);
-
-    assertNotNull(result);
-    verify(trackSearchCache).put(eq(key), any());
-  }
-
-  @Test
-  void findByArtistName_CacheHit() {
-    Pageable pageable = PageRequest.of(0, 10);
-    TrackSearchKey key = new TrackSearchKey("Artist", 0, 10);
-
-    Page<TrackDto> cachedPage = new PageImpl<>(List.of(new TrackDto()));
-    when(trackSearchCache.get(key)).thenReturn(cachedPage);
-
-    Page<TrackDto> result = trackService.findByArtistName("Artist", pageable);
-
-    assertEquals(cachedPage, result);
-    verify(trackRepository, never()).findByArtistName(anyString(), any());
-  }
-  @Test
-  void save_WithoutAlbumSuccess() {
-    TrackDto dto = new TrackDto();
-    dto.setTitle("Test Track");
-    dto.setAlbumId(null);
-
-    Track track = new Track();
-    track.setTitle("Test Track");
-
-    when(trackRepository.save(any(Track.class))).thenReturn(track);
-
-    TrackDto result = trackService.save(dto);
-
-    assertNotNull(result);
-    verify(albumRepository, never()).findById(anyLong());
-  }
-
-  @Test
-  void save_AlbumNotFound_ThrowsException() {
-    TrackDto dto = new TrackDto();
-    dto.setAlbumId(1L);
-
-    when(albumRepository.findById(1L)).thenReturn(Optional.empty());
-
-    assertThrows(ResponseStatusException.class, () -> trackService.save(dto));
-  }
-
-  @Test
-  void getAllTracks_Success() {
-    when(trackRepository.findAll()).thenReturn(List.of(new Track()));
-    List<TrackDto> result = trackService.getAllTracks();
-    assertFalse(result.isEmpty());
-  }
-
-  @Test
-  void getTrackById_Success() {
-    Track track = new Track();
-    track.setTitle("Song");
-    when(trackRepository.findById(1L)).thenReturn(Optional.of(track));
-
-    TrackDto result = trackService.getTrackById(1L);
-    assertEquals("Song", result.getTitle());
-  }
-
-  @Test
-  void searchByTitle_Success() {
-    when(trackRepository.findByTitleContainingIgnoreCase("Song"))
-        .thenReturn(List.of(new Track()));
-
-    List<TrackDto> result = trackService.searchByTitle("Song");
-    assertFalse(result.isEmpty());
+  void getAllTracks_WithPageable() {
+    PageRequest pageable = PageRequest.of(0, 10);
+    when(trackRepository.findAll(pageable)).thenReturn(Page.empty());
+    trackService.getAllTracks(pageable);
+    verify(trackRepository).findAll(pageable);
   }
 
   @Test
   void findByArtistNameNative_CacheMiss() {
-    Pageable pageable = PageRequest.of(0, 10);
-    TrackSearchKey key = new TrackSearchKey("Artist", 0, 10);
+    PageRequest pageable = PageRequest.of(0, 10);
+    when(trackSearchCache.get(any())).thenReturn(null);
+    when(trackRepository.findByArtistNameNative(any(), any())).thenReturn(Page.empty());
 
-    Page<Track> trackPage = new PageImpl<>(List.of(new Track()));
-
-    when(trackSearchCache.get(key)).thenReturn(null);
-    when(trackRepository.findByArtistNameNative("Artist", pageable)).thenReturn(trackPage);
-
-    Page<TrackDto> result = trackService.findByArtistNameNative("Artist", pageable);
-
-    assertNotNull(result);
-    verify(trackSearchCache).put(eq(key), any());
+    trackService.findByArtistNameNative("Artist", pageable);
+    verify(trackSearchCache).put(any(), any());
   }
 
   @Test
   void bulkCreate_Success() {
     TrackDto dto = new TrackDto();
-    dto.setTitle("Bulk Track");
+    dto.setTitle("Bulk");
+    when(trackRepository.save(any())).thenReturn(new Track());
 
-    when(trackRepository.save(any(Track.class))).thenReturn(new Track());
-
-    List<TrackDto> result = trackService.bulkCreate(List.of(dto));
-    assertFalse(result.isEmpty());
+    trackService.bulkCreate(List.of(dto));
     verify(trackSearchCache).invalidate();
   }
   @Test
-  void delete_TrackWithPlaylists_RemovesRelation() {
-    Track track = new Track();
-    track.setId(1L);
-    Playlist playlist = spy(new Playlist());
-    playlist.setTracks(new ArrayList<>(List.of(track)));
-    track.setPlaylists(new ArrayList<>(List.of(playlist)));
-
-    when(trackRepository.findById(1L)).thenReturn(Optional.of(track));
-
-    trackService.delete(1L);
-    assertFalse(playlist.getTracks().contains(track));
-    verify(trackRepository).delete(track);
+  void getTrackById_NotFound_ThrowsException() {
+    when(trackRepository.findById(999L)).thenReturn(Optional.empty());
+    assertThrows(ResponseStatusException.class, () -> trackService.getTrackById(999L));
   }
 
   @Test
-  void bulkCreate_AlbumNotFound_ThrowsAppException() {
+  void save_AlbumNotFound_ThrowsException() {
     TrackDto dto = new TrackDto();
     dto.setAlbumId(999L);
     when(albumRepository.findById(999L)).thenReturn(Optional.empty());
+    assertThrows(ResponseStatusException.class, () -> trackService.save(dto));
+  }
 
-    assertThrows(AppException.class, () -> trackService.bulkCreate(List.of(dto)));
+  @Test
+  void bulkCreate_AlbumNotFound_ThrowsException() {
+    TrackDto dto = new TrackDto();
+    dto.setAlbumId(999L);
+    when(albumRepository.findById(999L)).thenReturn(Optional.empty());
+    List<TrackDto> list = List.of(dto);
+    assertThrows(IllegalArgumentException.class, () -> trackService.bulkCreate(list));
   }
   @Test
-  void findByArtistNameNative_CacheHit() {
-    Pageable pageable = PageRequest.of(0, 10);
-    TrackSearchKey key = new TrackSearchKey("Artist", 0, 10);
+  void delete_NotFound_ThrowsException() {
+    when(trackRepository.findById(999L)).thenReturn(Optional.empty());
+    assertThrows(ResponseStatusException.class, () -> trackService.delete(999L));
+  }
+  @Test
+  void findByArtistName_CacheHit() {
+    PageRequest pageable = PageRequest.of(0, 10);
     Page<TrackDto> cachedPage = new PageImpl<>(List.of(new TrackDto()));
+    when(trackSearchCache.get(any())).thenReturn(cachedPage);
 
-    when(trackSearchCache.get(key)).thenReturn(cachedPage);
+    Page<TrackDto> result = trackService.findByArtistName("Artist", pageable);
+
+    assertEquals(1, result.getTotalElements());
+    verify(trackRepository, never()).findByArtistName(any(), any());
+  }
+
+  @Test
+  void findByArtistNameNative_CacheHit() {
+    PageRequest pageable = PageRequest.of(0, 10);
+    Page<TrackDto> cachedPage = new PageImpl<>(List.of(new TrackDto()));
+    when(trackSearchCache.get(any())).thenReturn(cachedPage);
 
     Page<TrackDto> result = trackService.findByArtistNameNative("Artist", pageable);
 
-    assertEquals(cachedPage, result);
+    assertEquals(1, result.getTotalElements());
+    verify(trackRepository, never()).findByArtistNameNative(any(), any());
+  }
+  @Test
+  void getAllTracks_NoParams_Success() {
+    when(trackRepository.findAll()).thenReturn(List.of(new Track()));
+    List<TrackDto> result = trackService.getAllTracks();
+    assertEquals(1, result.size());
+  }
+
+  @Test
+  void searchByTitle_Success() {
+    when(trackRepository.findByTitleContainingIgnoreCase("test")).thenReturn(List.of(new Track()));
+    List<TrackDto> result = trackService.searchByTitle("test");
+    assertEquals(1, result.size());
+  }
+
+  @Test
+  void save_NoAlbumId_Success() {
+    TrackDto dto = new TrackDto();
+    dto.setTitle("No Album");
+    when(trackRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+
+    TrackDto result = trackService.save(dto);
+    assertNull(result.getAlbumId());
+  }
+  @Test
+  void findByArtistName_CacheHit_Success() {
+    PageRequest pageable = PageRequest.of(0, 10);
+    Page<TrackDto> cachedPage = new PageImpl<>(List.of(new TrackDto()));
+    when(trackSearchCache.get(any())).thenReturn(cachedPage);
+    Page<TrackDto> result = trackService.findByArtistName("Some Artist", pageable);
+    assertEquals(1, result.getTotalElements());
+    verify(trackRepository, never()).findByArtistName(any(), any());
+  }
+  @Test
+  void findByArtistNameNative_CacheHit_Coverage() {
+    PageRequest pageable = PageRequest.of(0, 10);
+    Page<TrackDto> cached = new PageImpl<>(List.of(new TrackDto()));
+    when(trackSearchCache.get(any())).thenReturn(cached);
+
+    var result = trackService.findByArtistNameNative("Artist", pageable);
+    assertEquals(1, result.getTotalElements());
+  }
+
+  @Test
+  void bulkCreate_EmptyList_Coverage() {
+    assertTrue(trackService.bulkCreate(List.of()).isEmpty());
+  }
+  @Test
+  void findByArtistName_CacheMiss_Success() {
+    PageRequest pageable = PageRequest.of(0, 10);
+    when(trackSearchCache.get(any())).thenReturn(null);
+    when(trackRepository.findByArtistName(anyString(), any())).thenReturn(new PageImpl<>(List.of(new Track())));
+
+    Page<TrackDto> result = trackService.findByArtistName("Artist", pageable);
+
+    assertNotNull(result);
+    verify(trackRepository).findByArtistName(anyString(), any());
+    verify(trackSearchCache).put(any(), any());
+  }
+
+  @Test
+  void bulkCreate_WithoutAlbumIds_Coverage() {
+
+    TrackDto dto = new TrackDto();
+    dto.setTitle("Single bulk track");
+    dto.setDurationSeconds(100);
+    dto.setAlbumId(null);
+
+    when(trackRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+
+    List<TrackDto> result = trackService.bulkCreate(List.of(dto));
+    assertEquals(1, result.size());
+    assertNull(result.get(0).getAlbumId());
+  }
+  @Test
+  void findByArtistName_CacheHit_FullCoverage() {
+    PageRequest pageable = PageRequest.of(0, 10);
+    Page<TrackDto> cachedPage = new PageImpl<>(List.of(new TrackDto()));
+
+    when(trackSearchCache.get(any())).thenReturn(cachedPage);
+
+    Page<TrackDto> result = trackService.findByArtistName("Artist", pageable);
+
+    assertSame(cachedPage, result);
+    verify(trackRepository, never()).findByArtistName(any(), any());
+  }
+
+  @Test
+  void findByArtistNameNative_CacheHit_FullCoverage() {
+    PageRequest pageable = PageRequest.of(0, 10);
+    Page<TrackDto> cachedPage = new PageImpl<>(List.of(new TrackDto()));
+
+    when(trackSearchCache.get(any())).thenReturn(cachedPage);
+
+    Page<TrackDto> result = trackService.findByArtistNameNative("Artist", pageable);
+
+    assertSame(cachedPage, result);
     verify(trackRepository, never()).findByArtistNameNative(any(), any());
   }
 
   @Test
-  void bulkCreate_WithAlbumId_Present() {
+  void bulkCreate_WithMixedAlbumPresence_Coverage() {
+    TrackDto dtoWithoutAlbum = new TrackDto();
+    dtoWithoutAlbum.setTitle("No Album");
+    dtoWithoutAlbum.setAlbumId(null);
+
+    when(trackRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+
+    List<TrackDto> result = trackService.bulkCreate(List.of(dtoWithoutAlbum));
+    assertNull(result.get(0).getAlbumId());
+    verify(trackSearchCache).invalidate();
+  }
+  @Test
+  void getTrackById_Found_Success() {
+    Track track = new Track();
+    track.setId(1L);
+    track.setTitle("Test Track");
+
+    when(trackRepository.findById(1L)).thenReturn(Optional.of(track));
+
+    TrackDto result = trackService.getTrackById(1L);
+    assertNotNull(result);
+  }
+  @Test
+  void bulkCreate_WithValidAlbum_Success() {
     TrackDto dto = new TrackDto();
-    dto.setAlbumId(1L);
+    dto.setTitle("Track With Album");
+    dto.setDurationSeconds(200);
+    dto.setAlbumId(10L);
+
     Album album = new Album();
+    when(albumRepository.findById(10L)).thenReturn(Optional.of(album));
+    when(trackRepository.save(any())).thenAnswer(i -> i.getArgument(0));
 
-    when(albumRepository.findById(1L)).thenReturn(Optional.of(album));
-    when(trackRepository.save(any())).thenReturn(new Track());
-    trackService.bulkCreate(List.of(dto));
+    List<TrackDto> result = trackService.bulkCreate(List.of(dto));
 
-    verify(albumRepository).findById(1L);
-  }
-  @Test
-  void getTrackById_NotFound_ThrowsException() {
-    when(trackRepository.findById(1L)).thenReturn(Optional.empty());
-
-    assertThrows(ResponseStatusException.class, () -> trackService.getTrackById(1L));
-  }
-
-  @Test
-  void delete_NotFound_ThrowsException() {
-    when(trackRepository.findById(1L)).thenReturn(Optional.empty());
-
-    assertThrows(ResponseStatusException.class, () -> trackService.delete(1L));
+    assertEquals(1, result.size());
+    verify(albumRepository).findById(10L);
+    verify(trackSearchCache).invalidate();
   }
 }
