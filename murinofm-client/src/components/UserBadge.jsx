@@ -1,10 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../contexts/UserContext';
+import { useToast } from '../contexts/ToastContext';
+import { uploadImage, updateUserAvatar } from '../services/api';
 
 export default function UserBadge() {
   const { activeUser, setActiveUser } = useUser();
   const navigate = useNavigate();
+  const { addToast } = useToast();
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef(null);
 
@@ -24,6 +27,20 @@ export default function UserBadge() {
     navigate(path);
   };
 
+  const handleAvatarChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const res = await uploadImage(file);
+      const imageUrl = res.data.imageUrl;
+      await updateUserAvatar(activeUser.id, imageUrl);
+      setActiveUser({ ...activeUser, avatarUrl: imageUrl });
+      addToast('Аватарка обновлена!', 'success');
+    } catch (err) {
+      addToast('Не удалось загрузить аватарку', 'error');
+    }
+  };
+
   if (!activeUser) {
     return (
       <button
@@ -41,12 +58,22 @@ export default function UserBadge() {
         onClick={() => setShowMenu(prev => !prev)}
         className="flex items-center gap-3 bg-dark-800/90 backdrop-blur-sm px-4 py-2 rounded-full border border-dark-700 cursor-pointer"
       >
-        <div className="w-8 h-8 rounded-full overflow-hidden bg-dark-700 flex items-center justify-center">
+        <div className="relative w-8 h-8 rounded-full overflow-hidden bg-dark-700 flex items-center justify-center group">
           {activeUser.avatarUrl ? (
             <img src={activeUser.avatarUrl} alt="avatar" className="object-cover w-full h-full" />
           ) : (
-            <span className="text-xs text-gray-400">👤</span>
+            <span className="text-xs text-gray-400">+</span>
           )}
+          {/* Кнопка загрузки аватарки (поверх) */}
+          <label className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity">
+            <span className="text-white text-lg"></span>
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleAvatarChange}
+            />
+          </label>
         </div>
         <span className="text-sm font-medium text-white">{activeUser.username}</span>
       </button>
@@ -57,26 +84,26 @@ export default function UserBadge() {
             onClick={() => handleNavigate(`/tracks?artist=${encodeURIComponent(activeUser.username)}`)}
             className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-dark-700 hover:text-white transition"
           >
-            🎶 Мои треки
+           Мои треки
           </button>
           <button
             onClick={() => handleNavigate('/playlists')}
             className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-dark-700 hover:text-white transition"
           >
-            📋 Мои плейлисты
+            Мои плейлисты
           </button>
           <button
             onClick={() => handleNavigate('/liked')}
             className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-dark-700 hover:text-white transition"
           >
-            ❤️ Мне нравится
+             Мне нравится
           </button>
           <hr className="border-gray-700 my-1" />
           <button
             onClick={() => handleNavigate('/friends')}
             className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-dark-700 hover:text-white transition"
           >
-            👥 Мои друзья
+            Мои друзья
           </button>
           <hr className="border-gray-700 my-1" />
           <button
