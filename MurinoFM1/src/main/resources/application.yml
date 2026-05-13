@@ -17,3 +17,10 @@ logging:
   level:
     org.hibernate.SQL: INFO
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+app:
+  audio:
+    upload:
+      dir: /app/uploads/audio
+  image:
+    upload:
+      dir: /app/uploads/images

@@ -1,6 +1,7 @@
 package com.example.murinofm.controller;
 
 import org.slf4j.*;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.*;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
@@ -16,8 +17,12 @@ import java.util.*;
 public class FileController {
 
   private static final Logger log = LoggerFactory.getLogger(FileController.class);
-  private static final String AUDIO_DIR = System.getProperty("user.dir") + "/src/main/resources/static/audio/";
-  private static final String IMAGE_DIR = System.getProperty("user.dir") + "/src/main/resources/static/images/";
+
+  @Value("${app.audio.upload.dir:/app/uploads/audio}")
+  private String AUDIO_DIR;
+
+  @Value("${app.image.upload.dir:/app/uploads/images}")
+  private String IMAGE_DIR;
 
   // ------------------- АУДИО -------------------
   @PostMapping("/upload/audio")
@@ -63,7 +68,7 @@ public class FileController {
             .header(HttpHeaders.ACCEPT_RANGES, "bytes")
             .body(resource);
       }
-      // Range‑запрос
+      // Range‑запрос (без изменений)
       String rangeValue = rangeHeader.replace("bytes=", "").trim();
       String[] ranges = rangeValue.split("-");
       long start = Long.parseLong(ranges[0]);

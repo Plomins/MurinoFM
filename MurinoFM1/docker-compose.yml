@@ -1,10 +1,12 @@
-version: '3.8'
 services:
   app:
     build: .
     container_name: murinofm-app
     ports:
       - "8080:8080"
+    volumes:
+      - audio_uploads:/app/uploads/audio
+      - image_uploads:/app/uploads/images
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/murinofm_db
       - SPRING_DATASOURCE_USERNAME=postgres
@@ -23,9 +25,9 @@ services:
       - POSTGRES_PASSWORD=${DB_PASSWORD:-password}
     volumes:
       - pgdata:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
     restart: unless-stopped
 
 volumes:
   pgdata:
+  audio_uploads:
+  image_uploads:
