@@ -8,4 +8,8 @@ class MurinoFmApplicationTests {
     void alwaysPasses() {
         assertTrue(true);
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 03e09e2a5f371aa75fa619aeadc604762c18dee7
