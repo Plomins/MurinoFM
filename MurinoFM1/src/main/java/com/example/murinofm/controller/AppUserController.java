@@ -62,13 +62,6 @@ public class AppUserController {
       @Parameter(description = "ID пользователя") @PathVariable Long id) {
     appUserService.deleteUser(id);
   }
-@Operation(summary = "Обновить аватар пользователя")
-@PutMapping("/{id}/avatar")
-public AppUserDto updateAvatar(
-        @Parameter(description = "ID пользователя") @PathVariable Long id,
-        @Parameter(description = "Ссылка на аватар") @RequestParam String avatarUrl) {
-    return appUserService.updateAvatar(id, avatarUrl);
-}
   @Operation(summary = "Добавить существующий плейлист пользователю")
   @PostMapping("/{userId}/playlists/{playlistId}")
   public AppUserDto addPlaylist(
