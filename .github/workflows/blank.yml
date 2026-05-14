@@ -9,7 +9,6 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  # Тесты бэкенда
   test-backend:
     runs-on: ubuntu-latest
     steps:
@@ -26,7 +25,7 @@ jobs:
         run: ./gradlew test --no-daemon
         working-directory: MurinoFM1
 
-  # Тесты фронтенда
+  # 2. ТЕСТЫ ФРОНТЕНДА
   test-frontend:
     runs-on: ubuntu-latest
     steps:
@@ -41,8 +40,6 @@ jobs:
       - name: Run tests (if any)
         run: npm test -- --passWithNoTests
         working-directory: murinofm-client
-
-  # Сборка React + копирование в ресурсы + Docker build & push
   build-and-push:
     needs: [test-backend, test-frontend]
     runs-on: ubuntu-latest
@@ -87,8 +84,6 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-
-  # Деплой на Render с healthcheck
   deploy:
     needs: build-and-push
     runs-on: ubuntu-latest
@@ -101,16 +96,16 @@ jobs:
 
       - name: Wait for deployment and check health
         run: |
-          echo "Waiting 30 seconds for deployment to start..."
-          sleep 30
-          for i in {1..12}; do
+          echo "Waiting 60 seconds for deployment to start..."
+          sleep 60
+          for i in {1..10}; do
             STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://murinofm-1.onrender.com/actuator/health)
             if [ "$STATUS" -eq 200 ]; then
               echo "Health check passed!"
               exit 0
             fi
             echo "Attempt $i: health check returned $STATUS, waiting..."
-            sleep 10
+            sleep 15
           done
           echo "Health check failed after multiple attempts"
           exit 1
