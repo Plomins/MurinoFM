@@ -47,13 +47,11 @@ public class AppUserService {
     }
     AppUser user = new AppUser();
     user.setUsername(username);
-    user.setPassword(password);   // в реальном проекте нужно хешировать
+    user.setPassword(password); 
     AppUser saved = appUserRepository.save(user);
     log.info("Создан пользователь: {} с ID: {}", username, saved.getId());
     return AppUserDto.fromEntity(saved);
   }
-
-  // Вход – проверка имени и пароля
   @Transactional(readOnly = true)
   public AppUserDto authenticate(String username, String password) {
     AppUser user = appUserRepository.findAll().stream()
@@ -103,11 +101,4 @@ public class AppUserService {
         .map(AppUserDto::fromEntity)
         .toList();
   }
-  @Transactional
-public AppUserDto updateAvatar(Long id, String avatarUrl) {
-    AppUser user = appUserRepository.findById(id)
-            .orElseThrow(() -> new AppException("Пользователь не найден"));
-    user.setAvatarUrl(avatarUrl);
-    return AppUserDto.fromEntity(appUserRepository.save(user));
-}
 }
