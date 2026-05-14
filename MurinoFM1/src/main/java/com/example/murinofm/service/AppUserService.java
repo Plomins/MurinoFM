@@ -103,4 +103,11 @@ public class AppUserService {
         .map(AppUserDto::fromEntity)
         .toList();
   }
+  @Transactional
+public AppUserDto updateAvatar(Long id, String avatarUrl) {
+    AppUser user = appUserRepository.findById(id)
+            .orElseThrow(() -> new AppException("Пользователь не найден"));
+    user.setAvatarUrl(avatarUrl);
+    return AppUserDto.fromEntity(appUserRepository.save(user));
+}
 }
